@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="800" viewBox="0 0 600 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="800" fill="#EDF2F7"/>
+  <circle cx="300" cy="300" r="150" fill="#F26E5C" fill-opacity="0.2"/>
+  <circle cx="400" cy="200" r="80" fill="#4F46E5" fill-opacity="0.2"/>
+  <circle cx="200" cy="250" r="100" fill="#F26E5C" fill-opacity="0.1"/>
+  <path d="M300 450C377.32 450 440 387.32 440 310C440 232.68 377.32 170 300 170C222.68 170 160 232.68 160 310C160 387.32 222.68 450 300 450Z" fill="#F2F2F2"/>
+  <path d="M300 440C371.797 440 430 381.797 430 310C430 238.203 371.797 180 300 180C228.203 180 170 238.203 170 310C170 381.797 228.203 440 300 440Z" fill="#F9F9F9"/>
+  <path d="M300 430C366.274 430 420 376.274 420 310C420 243.726 366.274 190 300 190C233.726 190 180 243.726 180 310C180 376.274 233.726 430 300 430Z" fill="#FFFFFF"/>
+  <path d="M300 350C322.091 350 340 332.091 340 310C340 287.909 322.091 270 300 270C277.909 270 260 287.909 260 310C260 332.091 277.909 350 300 350Z" fill="#F26E5C" fill-opacity="0.3"/>
+  <path d="M300 340C316.569 340 330 326.569 330 310C330 293.431 316.569 280 300 280C283.431 280 270 293.431 270 310C270 326.569 283.431 340 300 340Z" fill="#4F46E5" fill-opacity="0.1"/>
+  <path d="M300 320C316.569 320 330 316.418 330 312C330 307.582 316.569 304 300 304C283.431 304 270 307.582 270 312C270 316.418 283.431 320 300 320Z" fill="#4F46E5" fill-opacity="0.2"/>
+  <path d="M265 380C265 380 280 420 300 420C320 420 335 380 335 380L325 370C325 370 315 390 300 390C285 390 275 370 275 370L265 380Z" fill="#F26E5C" fill-opacity="0.5"/>
+  <text x="300" y="550" font-family="Arial" font-size="24" text-anchor="middle" fill="#333333">Meditation Woman</text>
+  <text x="300" y="590" font-family="Arial" font-size="18" text-anchor="middle" fill="#666666">Replace with actual image from Pexels</text>
+</svg>

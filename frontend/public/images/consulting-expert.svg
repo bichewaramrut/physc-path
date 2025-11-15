@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="500" height="400" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="400" fill="#F5F5F5"/>
+  <rect x="50" y="50" width="400" height="300" fill="#F26E5C"/>
+  <rect x="100" y="100" width="300" height="200" fill="#FFFFFF"/>
+  <text x="250" y="200" font-family="Arial" font-size="24" text-anchor="middle" fill="#333333">Expert Consulting Image</text>
+  <text x="250" y="230" font-family="Arial" font-size="16" text-anchor="middle" fill="#666666">Replace with image from Pexels</text>
+</svg>

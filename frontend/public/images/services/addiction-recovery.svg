@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with subtle gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FEF7F5"/>
+      <stop offset="100%" style="stop-color:#F8F9FC"/>
+    </linearGradient>
+    <linearGradient id="recovery-path" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E5E7EB"/>
+      <stop offset="50%" style="stop-color:#F26E5C"/>
+      <stop offset="100%" style="stop-color:#4F46E5"/>
+    </linearGradient>
+    <radialGradient id="hope-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FEF3F2"/>
+      <stop offset="100%" style="stop-color:#F26E5C" stop-opacity="0.1"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bg-gradient)"/>
+  
+  <!-- Recovery Path/Journey -->
+  <path d="M20 200 Q100 180 150 200 T280 180 Q320 185 380 170" stroke="url(#recovery-path)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  
+  <!-- Broken chain symbol (representing breaking free) -->
+  <g transform="translate(60, 60)">
+    <!-- Chain links -->
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#6B7280" stroke-width="3"/>
+    <circle cx="20" cy="0" r="12" fill="none" stroke="#6B7280" stroke-width="3"/>
+    <circle cx="40" cy="0" r="12" fill="none" stroke="#6B7280" stroke-width="3"/>
+    <!-- Broken link -->
+    <circle cx="60" cy="0" r="12" fill="none" stroke="#F26E5C" stroke-width="3" stroke-dasharray="8,4"/>
+    <!-- Freedom symbol -->
+    <path d="M65 -8 L75 -5 L73 -15 M75 -5 L85 -8" stroke="#F26E5C" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Support group circle -->
+  <g transform="translate(280, 80)">
+    <!-- People in support circle -->
+    <circle cx="0" cy="0" r="35" fill="none" stroke="#4F46E5" stroke-width="2" opacity="0.3"/>
+    
+    <!-- Person 1 -->
+    <circle cx="-20" cy="-15" r="8" fill="#F7A693"/>
+    <rect x="-25" y="-7" width="10" height="15" rx="5" fill="#4F46E5"/>
+    
+    <!-- Person 2 -->
+    <circle cx="20" cy="-15" r="8" fill="#F7A693"/>
+    <rect x="15" y="-7" width="10" height="15" rx="5" fill="#F26E5C"/>
+    
+    <!-- Person 3 -->
+    <circle cx="0" cy="25" r="8" fill="#F7A693"/>
+    <rect x="-5" y="33" width="10" height="15" rx="5" fill="#10B981"/>
+    
+    <!-- Connection lines -->
+    <path d="M-20 -7 Q0 10 20 -7" stroke="#4F46E5" stroke-width="1" fill="none" opacity="0.4"/>
+    <path d="M20 -7 Q10 20 0 33" stroke="#4F46E5" stroke-width="1" fill="none" opacity="0.4"/>
+    <path d="M0 33 Q-10 20 -20 -7" stroke="#4F46E5" stroke-width="1" fill="none" opacity="0.4"/>
+  </g>
+  
+  <!-- Person on recovery journey -->
+  <g transform="translate(150, 150)">
+    <!-- Person figure -->
+    <circle cx="0" cy="0" r="15" fill="#F7A693"/>
+    <rect x="-8" y="15" width="16" height="25" rx="8" fill="#F26E5C"/>
+    <rect x="-12" y="20" width="8" height="20" rx="4" fill="#F26E5C"/>
+    <rect x="4" y="20" width="8" height="20" rx="4" fill="#F26E5C"/>
+    <rect x="-6" y="40" width="12" height="12" rx="6" fill="#374151"/>
+    
+    <!-- Hope/light radiating from person -->
+    <circle cx="0" cy="0" r="45" fill="url(#hope-glow)" opacity="0.6"/>
+    
+    <!-- Upward arrows (progress) -->
+    <path d="M25 -10 L35 -20 L45 -10" stroke="#F26E5C" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
+    <path d="M35 -5 L45 -15 L55 -5" stroke="#4F46E5" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+  </g>
+  
+  <!-- Healthy activities icons -->
+  <g transform="translate(50, 120)">
+    <!-- Exercise/fitness -->
+    <circle cx="0" cy="0" r="20" fill="#EFF8FF"/>
+    <path d="M-10 -5 Q0 -15 10 -5 Q0 5 -10 -5 Z" fill="#2563EB"/>
+    <text x="0" y="35" font-family="Arial" font-size="10" text-anchor="middle" fill="#6B7280">Exercise</text>
+  </g>
+  
+  <g transform="translate(320, 120)">
+    <!-- Therapy/counseling -->
+    <circle cx="0" cy="0" r="20" fill="#FEF3F2"/>
+    <path d="M-8 -8 Q0 -15 8 -8 Q0 -3 -8 -8 Z" fill="#F26E5C"/>
+    <rect x="-10" y="-5" width="20" height="2" fill="#F26E5C"/>
+    <rect x="-8" y="0" width="16" height="2" fill="#F26E5C"/>
+    <text x="0" y="35" font-family="Arial" font-size="10" text-anchor="middle" fill="#6B7280">Therapy</text>
+  </g>
+  
+  <!-- Milestone markers along the path -->
+  <circle cx="80" cy="190" r="4" fill="#10B981"/>
+  <circle cx="180" cy="195" r="4" fill="#F59E0B"/>
+  <circle cx="250" cy="185" r="4" fill="#8B5CF6"/>
+  <circle cx="320" cy="175" r="4" fill="#F26E5C"/>
+  
+  <!-- Recovery milestones text -->
+  <text x="80" y="210" font-family="Arial" font-size="8" text-anchor="middle" fill="#10B981">Start</text>
+  <text x="180" y="215" font-family="Arial" font-size="8" text-anchor="middle" fill="#F59E0B">Awareness</text>
+  <text x="250" y="205" font-family="Arial" font-size="8" text-anchor="middle" fill="#8B5CF6">Progress</text>
+  <text x="320" y="195" font-family="Arial" font-size="8" text-anchor="middle" fill="#F26E5C">Recovery</text>
+  
+  <!-- Positive symbols -->
+  <!-- Heart (love and self-care) -->
+  <g transform="translate(100, 50)">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
+          fill="#EF4444" transform="scale(0.6) translate(-12, -12)"/>
+  </g>
+  
+  <!-- Peace/balance symbol -->
+  <g transform="translate(300, 50)">
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#10B981" stroke-width="2"/>
+    <path d="M0 -12 L0 12 M0 0 L-8 8 M0 0 L8 8" stroke="#10B981" stroke-width="2"/>
+  </g>
+  
+  <!-- Motivational elements -->
+  <g transform="translate(200, 40)">
+    <!-- Star of hope -->
+    <path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z" fill="#F59E0B" opacity="0.8"/>
+    <text x="0" y="25" font-family="Arial" font-size="10" text-anchor="middle" fill="#F59E0B" font-weight="bold">Hope</text>
+  </g>
+  
+  <!-- Bottom text -->
+  <text x="200" y="280" font-family="Arial" font-size="14" text-anchor="middle" fill="#374151" font-weight="bold">Recovery Journey: Breaking Free, Building Hope</text>
+</svg>

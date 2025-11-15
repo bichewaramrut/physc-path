@@ -1,0 +1,446 @@
+'use client';
+
+import { useRef, useState, useEffect, useCallback } from 'react';
+
+interface WebRTCConfig {
+  iceServers: RTCIceServer[];
+}
+
+interface SignalingMessage {
+  type: string;
+  from?: string;
+  to?: string;
+  sessionId?: string;
+  data?: any;
+}
+
+interface RemoteStreamsMap {
+  [participantId: string]: MediaStream;
+}
+
+interface PeerConnectionsMap {
+  [participantId: string]: RTCPeerConnection;
+}
+
+interface UseWebRTCProps {
+  sessionId: string;
+  token: string;
+}
+
+interface UseWebRTCReturn {
+  localStream: MediaStream | null;
+  remoteStreams: RemoteStreamsMap;
+  localVideoRef: React.RefObject<HTMLVideoElement>;
+  isConnected: boolean;
+  error: string | null;
+  initWebRTC: () => Promise<MediaStream | null>;
+  toggleVideo: () => boolean;
+  toggleAudio: () => boolean;
+  shareScreen: () => Promise<boolean>;
+}
+
+const useWebRTC = ({ sessionId, token }: UseWebRTCProps): UseWebRTCReturn => {
+  // State for managing local and remote streams
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStreams, setRemoteStreams] = useState<RemoteStreamsMap>({});
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Refs for WebRTC connections
+  const peerConnections = useRef<PeerConnectionsMap>({});
+  const socketRef = useRef<WebSocket | null>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const webRTCConfigRef = useRef<WebRTCConfig | null>(null);
+
+  // Send a signaling message through the WebSocket
+  const sendSignalingMessage = useCallback((message: Partial<SignalingMessage>) => {
+    if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket not connected');
+      return;
+    }
+    
+    const fullMessage = {
+      sessionId,
+      ...message
+    };
+    
+    socketRef.current.send(JSON.stringify(fullMessage));
+  }, [sessionId]);
+
+  // Close a specific peer connection
+  const closePeerConnection = useCallback((participantId: string) => {
+    const peerConnection = peerConnections.current[participantId];
+    
+    if (peerConnection) {
+      peerConnection.close();
+      delete peerConnections.current[participantId];
+      
+      setRemoteStreams(prev => {
+        const newStreams = { ...prev };
+        delete newStreams[participantId];
+        return newStreams;
+      });
+    }
+  }, []);
+
+  // Create a peer connection to a participant
+  const createPeerConnection = useCallback(async (participantId: string) => {
+    if (peerConnections.current[participantId]) return peerConnections.current[participantId];
+    
+    try {
+      if (!webRTCConfigRef.current) {
+        throw new Error('WebRTC configuration not available');
+      }
+      
+      const peerConnection = new RTCPeerConnection(webRTCConfigRef.current);
+      
+      peerConnections.current[participantId] = peerConnection;
+      
+      // Add local tracks to the connection
+      if (localStream) {
+        localStream.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStream);
+        });
+      }
+      
+      // Handle ICE candidates
+      peerConnection.onicecandidate = (event) => {
+        if (event.candidate) {
+          sendSignalingMessage({
+            type: 'ice-candidate',
+            to: participantId,
+            data: event.candidate
+          });
+        }
+      };
+      
+      // Handle connection state changes
+      peerConnection.onconnectionstatechange = () => {
+        console.log(`Connection state with ${participantId}:`, peerConnection.connectionState);
+      };
+      
+      // Handle incoming tracks
+      peerConnection.ontrack = (event) => {
+        console.log('Received remote track from', participantId);
+        
+        setRemoteStreams(prev => ({
+          ...prev,
+          [participantId]: event.streams[0]
+        }));
+      };
+      
+      return peerConnection;
+    } catch (err) {
+      console.error('Error creating peer connection:', err);
+      setError('Failed to create peer connection');
+      return null;
+    }
+  }, [localStream, sendSignalingMessage]);
+
+  // Create and send an offer
+  const createOffer = useCallback(async (participantId: string) => {
+    try {
+      const peerConnection = peerConnections.current[participantId];
+      if (!peerConnection) return;
+      
+      const offer = await peerConnection.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
+      
+      await peerConnection.setLocalDescription(offer);
+      
+      sendSignalingMessage({
+        type: 'offer',
+        to: participantId,
+        data: offer
+      });
+    } catch (err) {
+      console.error('Error creating offer:', err);
+      setError('Failed to create offer');
+    }
+  }, [sendSignalingMessage]);
+
+  // Handle an incoming offer
+  const handleOffer = useCallback(async (participantId: string, offer: RTCSessionDescriptionInit) => {
+    try {
+      let peerConnection = peerConnections.current[participantId];
+      
+      if (!peerConnection) {
+        const newPeerConnection = await createPeerConnection(participantId);
+        if (!newPeerConnection) {
+          throw new Error('Failed to create peer connection');
+        }
+        peerConnection = newPeerConnection;
+      }
+      
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+      
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      
+      sendSignalingMessage({
+        type: 'answer',
+        to: participantId,
+        data: answer
+      });
+    } catch (err) {
+      console.error('Error handling offer:', err);
+      setError('Failed to handle offer');
+    }
+  }, [createPeerConnection, sendSignalingMessage]);
+
+  // Handle an incoming answer
+  const handleAnswer = useCallback(async (participantId: string, answer: RTCSessionDescriptionInit) => {
+    try {
+      const peerConnection = peerConnections.current[participantId];
+      if (!peerConnection) return;
+      
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    } catch (err) {
+      console.error('Error handling answer:', err);
+      setError('Failed to handle answer');
+    }
+  }, []);
+
+  // Handle an incoming ICE candidate
+  const handleIceCandidate = useCallback(async (participantId: string, candidate: RTCIceCandidateInit) => {
+    try {
+      const peerConnection = peerConnections.current[participantId];
+      if (!peerConnection) return;
+      
+      await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (err) {
+      console.error('Error handling ICE candidate:', err);
+      // Not setting error state here as this can happen normally
+    }
+  }, []);
+
+  // Handle signaling messages
+  const handleSignalingMessage = useCallback(async (message: SignalingMessage) => {
+    if (!message) return;
+    
+    const { type, from, data } = message;
+    if (!from && type !== 'error') return;
+    
+    switch (type) {
+      case 'new-participant':
+        // A new participant joined, initiate connection
+        if (from) {
+          await createPeerConnection(from);
+          await createOffer(from);
+        }
+        break;
+        
+      case 'participant-left':
+        // A participant left, clean up
+        if (from) {
+          closePeerConnection(from);
+        }
+        break;
+        
+      case 'offer':
+        // Received an offer, create answer
+        if (from) {
+          await handleOffer(from, data);
+        }
+        break;
+        
+      case 'answer':
+        // Received an answer to our offer
+        if (from) {
+          await handleAnswer(from, data);
+        }
+        break;
+        
+      case 'ice-candidate':
+        // Received ICE candidate
+        if (from) {
+          await handleIceCandidate(from, data);
+        }
+        break;
+        
+      default:
+        console.warn('Unknown message type:', type);
+    }
+  }, [createPeerConnection, createOffer, handleOffer, handleAnswer, handleIceCandidate, closePeerConnection]);
+
+  // Connect to signaling server via WebSocket
+  const connectSignalingServer = useCallback((wsUrl: string) => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsFullUrl = `${protocol}//${window.location.host}${wsUrl}`;
+    
+    const socket = new WebSocket(wsFullUrl);
+    socketRef.current = socket;
+    
+    socket.onopen = () => {
+      console.log('Connected to signaling server');
+      setIsConnected(true);
+    };
+    
+    socket.onmessage = async (event) => {
+      try {
+        const message = JSON.parse(event.data) as SignalingMessage;
+        handleSignalingMessage(message);
+      } catch (err) {
+        console.error('Error parsing signaling message:', err);
+      }
+    };
+    
+    socket.onclose = () => {
+      console.log('Disconnected from signaling server');
+      setIsConnected(false);
+    };
+    
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setError('WebSocket connection error');
+    };
+  }, [handleSignalingMessage]);
+
+  // Initialize WebRTC
+  const initWebRTC = useCallback(async () => {
+    try {
+      // Get WebRTC config from server (STUN/TURN servers)
+      const configResponse = await fetch('/api/video/webrtc-config');
+      if (!configResponse.ok) throw new Error('Failed to get WebRTC configuration');
+      
+      webRTCConfigRef.current = await configResponse.json();
+      
+      // Get media stream
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true
+      });
+      
+      setLocalStream(stream);
+      
+      // Connect to signaling server
+      const joinResponse = await fetch(`/api/video/join/${sessionId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!joinResponse.ok) throw new Error('Failed to join video session');
+      
+      const joinInfo = await joinResponse.json();
+      
+      // Connect to WebSocket for signaling
+      connectSignalingServer(joinInfo.wsUrl);
+      
+      return stream;
+    } catch (err) {
+      console.error('WebRTC initialization error:', err);
+      setError(err instanceof Error ? err.message : 'Unknown WebRTC initialization error');
+      return null;
+    }
+  }, [sessionId, token, connectSignalingServer]);
+
+  // Toggle video
+  const toggleVideo = useCallback((): boolean => {
+    if (!localStream) return false;
+    
+    const videoTrack = localStream.getVideoTracks()[0];
+    if (videoTrack) {
+      videoTrack.enabled = !videoTrack.enabled;
+      return videoTrack.enabled;
+    }
+    
+    return false;
+  }, [localStream]);
+
+  // Toggle audio
+  const toggleAudio = useCallback((): boolean => {
+    if (!localStream) return false;
+    
+    const audioTrack = localStream.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = !audioTrack.enabled;
+      return audioTrack.enabled;
+    }
+    
+    return false;
+  }, [localStream]);
+
+  // Share screen
+  const shareScreen = useCallback(async (): Promise<boolean> => {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true
+      });
+      
+      // Replace video track in all peer connections
+      const videoTrack = screenStream.getVideoTracks()[0];
+      
+      Object.values(peerConnections.current).forEach((pc) => {
+        const sender = pc.getSenders().find(s => 
+          s.track && s.track.kind === 'video'
+        );
+        
+        if (sender) {
+          sender.replaceTrack(videoTrack);
+        }
+      });
+      
+      // Handle when user stops sharing screen
+      videoTrack.addEventListener('ended', () => {
+        // Restore camera video
+        if (localStream) {
+          const cameraTrack = localStream.getVideoTracks()[0];
+          
+          Object.values(peerConnections.current).forEach((pc) => {
+            const sender = pc.getSenders().find(s => 
+              s.track && s.track.kind === 'video'
+            );
+            
+            if (sender && cameraTrack) {
+              sender.replaceTrack(cameraTrack);
+            }
+          });
+        }
+      });
+      
+      return true;
+    } catch (err) {
+      console.error('Error sharing screen:', err);
+      setError('Failed to share screen');
+      return false;
+    }
+  }, [localStream]);
+
+  // Clean up when component unmounts
+  useEffect(() => {
+    return () => {
+      // Close all peer connections
+      Object.keys(peerConnections.current).forEach(participantId => {
+        closePeerConnection(participantId);
+      });
+      
+      // Close WebSocket
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+      
+      // Stop local stream
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [localStream, closePeerConnection]);
+
+  return {
+    localStream,
+    remoteStreams,
+    localVideoRef,
+    isConnected,
+    error,
+    initWebRTC,
+    toggleVideo,
+    toggleAudio,
+    shareScreen
+  };
+};
+
+export default useWebRTC;
